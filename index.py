@@ -1,3 +1,4 @@
+import os
 import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -58,11 +59,14 @@ async def main():
     # Đăng ký lệnh /getinfo
     application.add_handler(CommandHandler("getinfo", get_info))
 
+    # Lấy cổng từ biến môi trường
+    port = int(os.environ.get("PORT", 443))  # Mặc định cổng 443 nếu không có
+
     # Cài đặt webhook (cần await)
     await application.bot.set_webhook(WEBHOOK_URL)
 
     # Bắt đầu bot với webhook thay vì polling
-    await application.run_webhook(listen="0.0.0.0", port=443, url_path="webhook", webhook_url=WEBHOOK_URL)
+    await application.run_webhook(listen="0.0.0.0", port=port, url_path="webhook", webhook_url=WEBHOOK_URL)
 
 if __name__ == '__main__':
     # Chạy trực tiếp hàm main() mà không cần asyncio.run()
