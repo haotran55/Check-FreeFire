@@ -3,7 +3,7 @@ import requests
 import telegram
 
 app = Flask(__name__)
-TOKEN = "YOUR_TOKEN"
+TOKEN = "8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI"
 bot = telegram.Bot(token=TOKEN)
 
 @app.route('/port')
