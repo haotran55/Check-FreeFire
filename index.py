@@ -1,6 +1,6 @@
 import requests
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 # Hàm lấy thông tin tài khoản Free Fire
 def get_safe(data, key, default="Không Có"):
@@ -37,28 +37,26 @@ def get_free_fire_info(account_id):
         return f"⚠️ Đã xảy ra lỗi: {str(e)}"
 
 # Hàm xử lý lệnh /getinfo
-def get_info(update: Update, context: CallbackContext):
+async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         account_id = context.args[0]  # Lấy ID từ tham số người dùng nhập
         info = get_free_fire_info(account_id)
-        update.message.reply_text(info)
+        await update.message.reply_text(info)
     except IndexError:
-        update.message.reply_text("⚠️ Vui lòng cung cấp ID tài khoản. Ví dụ: /getinfo 123456")
+        await update.message.reply_text("⚠️ Vui lòng cung cấp ID tài khoản. Ví dụ: /getinfo 123456")
 
 # Hàm chính để khởi tạo bot
 def main():
     # Sử dụng token bạn nhận từ BotFather
     TOKEN = '8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI'
 
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
+    application = Application.builder().token(TOKEN).build()
 
     # Đăng ký lệnh /getinfo
-    dp.add_handler(CommandHandler("getinfo", get_info))
+    application.add_handler(CommandHandler("getinfo", get_info))
 
     # Bắt đầu bot
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
