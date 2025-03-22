@@ -1,6 +1,7 @@
 import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+import requests
 
 # Hàm lấy thông tin tài khoản Free Fire
 def get_safe(data, key, default="Không Có"):
@@ -46,7 +47,7 @@ async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Vui lòng cung cấp ID tài khoản. Ví dụ: /getinfo 123456")
 
 # Hàm chính để khởi tạo bot
-def main():
+async def main():
     # Sử dụng token bạn nhận từ BotFather
     TOKEN = '8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI'
     WEBHOOK_URL = 'https://yourdomain.com/webhook'  # Cập nhật với URL webhook của bạn
@@ -57,11 +58,12 @@ def main():
     # Đăng ký lệnh /getinfo
     application.add_handler(CommandHandler("getinfo", get_info))
 
-    # Cài đặt webhook
-    application.bot.set_webhook(WEBHOOK_URL)
+    # Cài đặt webhook (cần await)
+    await application.bot.set_webhook(WEBHOOK_URL)
 
     # Bắt đầu bot với webhook thay vì polling
-    application.run_webhook(listen="0.0.0.0", port=443, url_path="webhook", webhook_url=WEBHOOK_URL)
+    await application.run_webhook(listen="0.0.0.0", port=443, url_path="webhook", webhook_url=WEBHOOK_URL)
 
 if __name__ == '__main__':
-    main()
+    import asyncio
+    asyncio.run(main())
