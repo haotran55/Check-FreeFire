@@ -6,7 +6,7 @@ app = Flask(__name__)
 TOKEN = "YOUR_TOKEN"
 bot = telegram.Bot(token=TOKEN)
 
-@app.route('/')
+@app.route('/port')
 def home():
     return "Bot Running!"
 
