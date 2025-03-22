@@ -65,5 +65,6 @@ async def main():
     await application.run_webhook(listen="0.0.0.0", port=443, url_path="webhook", webhook_url=WEBHOOK_URL)
 
 if __name__ == '__main__':
+    # Chạy trực tiếp hàm main() mà không cần asyncio.run()
     import asyncio
-    asyncio.run(main())
+    asyncio.ensure_future(main())
