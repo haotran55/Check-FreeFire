@@ -1,4 +1,4 @@
-import requests
+import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
@@ -49,14 +49,19 @@ async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     # Sử dụng token bạn nhận từ BotFather
     TOKEN = '8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI'
+    WEBHOOK_URL = 'https://yourdomain.com/webhook'  # Cập nhật với URL webhook của bạn
 
+    # Cấu hình ứng dụng
     application = Application.builder().token(TOKEN).build()
 
     # Đăng ký lệnh /getinfo
     application.add_handler(CommandHandler("getinfo", get_info))
 
-    # Bắt đầu bot
-    application.run_polling()
+    # Cài đặt webhook
+    application.bot.set_webhook(WEBHOOK_URL)
+
+    # Bắt đầu bot với webhook thay vì polling
+    application.run_webhook(listen="0.0.0.0", port=443, url_path="webhook", webhook_url=WEBHOOK_URL)
 
 if __name__ == '__main__':
     main()
