@@ -3,7 +3,7 @@ import os
 from telebot import types
 
 # Lấy token từ biến môi trường trên Render
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI")
 bot = telebot.TeleBot(TOKEN)
 
 # Lệnh /start
