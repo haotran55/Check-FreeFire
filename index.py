@@ -15,7 +15,7 @@ def start(message):
 
 @bot.message_handler(commands=['admin'])
 def admin(message):
-user_id = message.chat.id
+    user_id = message.chat.id
     cursor.execute("SELECT is_admin FROM users WHERE id = ?", (user_id,))
     result = cursor.fetchone()
     
