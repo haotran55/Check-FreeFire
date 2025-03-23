@@ -1,74 +1,68 @@
+import telebot
 import os
-import logging
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
-import requests
+from telebot import types
 
-# Hàm lấy thông tin tài khoản Free Fire
-def get_safe(data, key, default="Không Có"):
-    """ Trả về giá trị của key trong dữ liệu, nếu không có trả về giá trị mặc định """
-    return data.get(key, default) if key in data else default
+# Lấy token từ biến môi trường trên Render
+TOKEN = os.getenv("BOT_TOKEN")
+bot = telebot.TeleBot(TOKEN)
 
-def get_free_fire_info(account_id):
+# Lệnh /start
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, "Chào mừng bạn đến với bot Telegram!")
+
+@bot.message_handler(commands=['admin'])
+def admin(message):
+user_id = message.chat.id
+    cursor.execute("SELECT is_admin FROM users WHERE id = ?", (user_id,))
+    result = cursor.fetchone()
+    
+    if result and result[0] == 1:
+        bot.send_message(user_id, "Bạn là admin!")
+    else:
+        bot.send_message(user_id, "Bạn không phải admin!")
+
+
+# Lệnh chơi Tài Xỉu
+@bot.message_handler(commands=['taixiu'])
+def taixiu(message):
+    dice_1 = random.randint(1, 6)
+    dice_2 = random.randint(1, 6)
+    dice_3 = random.randint(1, 6)
+    total = dice_1 + dice_2 + dice_3
+
+    result = "🎲 Xỉu!" if total <= 10 else "🎲 Tài!"
+    
+    bot.send_message(
+        message.chat.id,
+        f"🎲 Xúc xắc: {dice_1} - {dice_2} - {dice_3}\n"
+        f"✨ Tổng điểm: {total}\n"
+        f"👉 Kết quả: {result}")
+
+
+# Lệnh spam tin nhắn
+@bot.message_handler(commands=['spam'])
+def spam_message(message):
     try:
-        url = f'http://minhnguyen3004.x10.mx/infofreefire.php?id={account_id}'
-        response = requests.get(url)
-        content_type = response.headers.get('Content-Type', '').lower()
+        parts = message.text.split(" ", 2)
+        if len(parts) < 3:
+            bot.reply_to(message, "Cú pháp: /spam [số đt] [Số lần]")
+            return
 
-        if 'application/json' in content_type:
-            data = response.json()
+        times = int(parts[1])
+        text = parts[2]
 
-            if "Account Name" not in data:
-                return f"⚠️ Không tìm thấy thông tin cho ID {account_id}."
+        if times > 20:
+            bot.reply_to(message, "Bạn chỉ có thể spam tối đa 20 lần!")
+            return
 
-            # Định dạng tin nhắn
-            account_info = "┌ THÔNG TIN TÀI KHOẢN 📊\n"
-            account_info += f"├ Tên Tài Khoản: {get_safe(data, 'Account Name')}\n"
-            account_info += f"├ UID Tài Khoản: {get_safe(data, 'Account UID')}\n"
-            account_info += f"├ Cấp Độ Tài Khoản: {get_safe(data, 'Account Level')}\n"
-            account_info += f"├ XP Tài Khoản: {get_safe(data, 'Account XP')}\n"
-            account_info += f"├ Số Likes Tài Khoản: {get_safe(data, 'Account Likes')}\n"
-            account_info += f"├ Ngôn Ngữ Tài Khoản: {get_safe(data, 'Account Language')}\n"
-            account_info += f"├ Lần Đăng Nhập Cuối: {get_safe(data, 'Account Last Login (GMT 0530)')}\n"
-            account_info += f"├ Thời Gian Tạo Tài Khoản: {get_safe(data, 'Account Create Time (GMT 0530)')}\n"
-            account_info += f"├ Trạng Thái Nổi Tiếng: {get_safe(data, 'Account Celebrity Status')}\n"
-            account_info += "└──────────────────────────\n"
+        for _ in range(times):
+            bot.send_message(message.chat.id, text)
 
-            return account_info
-    except Exception as e:
-        return f"⚠️ Đã xảy ra lỗi: {str(e)}"
+    except ValueError:
+        bot.reply_to(message, "Số lần phải là số nguyên!")
 
-# Hàm xử lý lệnh /getinfo
-async def get_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        account_id = context.args[0]  # Lấy ID từ tham số người dùng nhập
-        info = get_free_fire_info(account_id)
-        await update.message.reply_text(info)
-    except IndexError:
-        await update.message.reply_text("⚠️ Vui lòng cung cấp ID tài khoản. Ví dụ: /getinfo 123456")
-
-# Hàm chính để khởi tạo bot
-async def main():
-    # Sử dụng token bạn nhận từ BotFather
-    TOKEN = '8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI'
-    WEBHOOK_URL = 'https://yourdomain.com/webhook'  # Cập nhật với URL webhook của bạn
-
-    # Cấu hình ứng dụng
-    application = Application.builder().token(TOKEN).build()
-
-    # Đăng ký lệnh /getinfo
-    application.add_handler(CommandHandler("getinfo", get_info))
-
-    # Lấy cổng từ biến môi trường
-    port = int(os.environ.get("PORT", 443))  # Mặc định cổng 443 nếu không có
-
-    # Cài đặt webhook (cần await)
-    await application.bot.set_webhook(WEBHOOK_URL)
-
-    # Bắt đầu bot với webhook thay vì polling
-    await application.run_webhook(listen="0.0.0.0", port=port, url_path="webhook", webhook_url=WEBHOOK_URL)
-
-if __name__ == '__main__':
-    # Chạy trực tiếp hàm main() mà không cần asyncio.run()
-    import asyncio
-    asyncio.ensure_future(main())
+# Chạy bot
+print("Bot đang chạy.")
+bot.infinity_polling()
