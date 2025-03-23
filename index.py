@@ -7,10 +7,11 @@ TOKEN = os.getenv("8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI")
 bot = telebot.TeleBot(TOKEN)
 
 # Lệnh /start
-
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "Chào mừng bạn đến với bot Telegram!")
+    user_id = message.chat.id  # ✔ Thụt vào đúng
+    bot.send_message(user_id, "Chào mừng bạn đến với bot!")  
+
 
 @bot.message_handler(commands=['admin'])
 def admin(message):
